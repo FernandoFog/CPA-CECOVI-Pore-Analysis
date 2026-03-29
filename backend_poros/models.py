@@ -104,6 +104,7 @@ class AnalysisResult:
     segmentation: SegmentationResult
     overlaps: OverlapResult
     graph: GraphResult
+    all_pore_ids: Set[int]
     external_pore_ids: Set[int]            # poros conectados al exterior
     internal_pore_ids: Set[int]            # poros totalmente internos
     internal_components: List[InternalPoreComponent]

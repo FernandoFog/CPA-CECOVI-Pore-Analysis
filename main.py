@@ -19,7 +19,7 @@ from backend_poros import (
     ThresholdConfig,
     GeometryConfig,
     run_full_analysis,
-    export_internal_pores_stl,
+    export_pores_stl,
     obtener_todos_los_ids,
     compute_per_image_analysis,
     export_per_image_analysis_to_csv,
@@ -161,8 +161,16 @@ class PorosApp(ctk.CTk):
         # PASO 6: EXPORTAR
         self._create_step_label("6. Exportar Resultados")
         
-        self.btn_exp_stl = ctk.CTkButton(self.sidebar, text="Exportar STL (Poros Internos)", state="disabled", command=self.on_generate_stl)
-        self.btn_exp_stl.pack(padx=20, pady=5, fill="x")
+        frame_stl = ctk.CTkFrame(self.sidebar, fg_color="transparent")
+        frame_stl.pack(padx=20, pady=5, fill="x")
+
+        self.stl_type_var = ctk.StringVar(value="internos")
+
+        self.btn_exp_stl = ctk.CTkButton(frame_stl,text="Exportar STL",state="disabled",command=self.on_generate_stl)
+        self.btn_exp_stl.pack(side="left", fill="x", expand=True, padx=(0, 8))
+
+        self.combo_stl_type = ctk.CTkComboBox(frame_stl,values=["internos", "externos", "todos"],variable=self.stl_type_var,state="readonly",width=120)
+        self.combo_stl_type.pack(side="right")
         
         self.btn_exp_csv = ctk.CTkButton(self.sidebar, text="Exportar CSV (Volúmenes 3D)", state="disabled", command=self.on_export_csv)
         self.btn_exp_csv.pack(padx=20, pady=5, fill="x")
@@ -283,7 +291,7 @@ class PorosApp(ctk.CTk):
             return
 
         # Check first image
-        img0 = cv2.imread(self.image_paths[0])
+        img0 = self.imread_unicode(self.image_paths[0])
         if img0 is None: return
         h0, w0 = img0.shape[:2]
         
@@ -302,6 +310,13 @@ class PorosApp(ctk.CTk):
             self.current_image_index = (self.current_image_index + 1) % len(self.image_paths)
             self._update_all_previews()
 
+    import numpy as np
+
+    def imread_unicode(self, path):
+        with open(path, 'rb') as f:
+            data = np.frombuffer(f.read(), np.uint8)
+        return cv2.imdecode(data, cv2.IMREAD_COLOR)
+
     def _update_all_previews(self, *args):
         if not self.image_paths:
             return
@@ -317,7 +332,7 @@ class PorosApp(ctk.CTk):
             thr_cfg = self._build_threshold_config_safe()
             
             # 2. Procesar imagen
-            img_bgr = cv2.imread(path)
+            img_bgr = self.imread_unicode(path)
             if img_bgr is None: return
             img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
             h, w = img_rgb.shape[:2]
@@ -504,14 +519,25 @@ class PorosApp(ctk.CTk):
 
 
     def on_generate_stl(self):
-        path = filedialog.asksaveasfilename(defaultextension=".stl", filetypes=[("STL", "*.stl")])
+        path = filedialog.asksaveasfilename(
+            defaultextension=".stl",
+            filetypes=[("STL", "*.stl")]
+        )
         if path:
             original_text = self.btn_exp_stl.cget("text")
             self.btn_exp_stl.configure(state="disabled", text="Exportando...")
             self.update()
             try:
-                n, final_path = export_internal_pores_stl(self.analysis, self.geom_cfg, path)
-                messagebox.showinfo("Éxito", f"STL guardado con {n} poros.")
+                tipo = self.stl_type_var.get()
+
+                n, final_path = export_pores_stl(
+                    self.analysis,
+                    self.geom_cfg,
+                    path,
+                    tipo=tipo
+                )
+
+                messagebox.showinfo("Éxito", f"STL de poros {tipo} guardado con {n} poros.")
             except Exception as e:
                 messagebox.showerror("Error", str(e))
             finally:

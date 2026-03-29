@@ -28,7 +28,7 @@ from .pores3d import (
     compute_internal_components,
     compute_internal_components_volumes,
 )
-from .pipeline import run_full_analysis, export_internal_pores_stl
+from .pipeline import run_full_analysis, export_pores_stl
 from .analysis_2d import (        
     compute_per_image_analysis,
     export_per_image_analysis_to_csv,

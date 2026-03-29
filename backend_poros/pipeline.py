@@ -79,6 +79,7 @@ def run_full_analysis(
         segmentation=seg_result,
         overlaps=overlaps,
         graph=graph_result,
+        all_pore_ids=ids_todos,
         external_pore_ids=external_ids,
         internal_pore_ids=internal_ids,
         internal_components=internal_components,
@@ -86,36 +87,41 @@ def run_full_analysis(
     )
 
 
-def export_internal_pores_stl(
+def export_pores_stl(
     analysis: AnalysisResult,
     geom_cfg: GeometryConfig,
     ruta_stl: str,
-) -> Tuple[int, str]:
-    """
-    A partir de un AnalysisResult ya calculado:
-      - Construye el volumen 3D de poros internos (todos juntos)
-      - Recorta a la bounding box mínima
-      - Exporta a STL
-    Devuelve:
-      - número de poros internos 2D (IDs)
-      - ruta del archivo STL (por conveniencia)
-    """
-    internal_ids = analysis.internal_pore_ids
-    if not internal_ids:
-        raise ValueError("No hay poros internos para exportar a STL.")
+    tipo: str,  # "internos", "externos" o "todos"
+) -> tuple[int, str]:
+
+    if tipo == "internos":
+        pore_ids = analysis.internal_pore_ids
+        nombre = "poros_internos"
+    elif tipo == "externos":
+        pore_ids = analysis.external_pore_ids
+        nombre = "poros_externos"
+    elif tipo == "todos":
+        pore_ids = analysis.all_pore_ids
+        nombre = "poros_todos"
+    else:
+        raise ValueError("tipo debe ser 'internos', 'externos' o 'todos'")
+
+    if not pore_ids:
+        raise ValueError(f"No hay poros {tipo} para exportar.")
 
     volumen, _ = construir_volumen_3d(
         analysis.segmentation.labels_by_image,
-        internal_ids,
+        pore_ids,
     )
 
     volumen_recortado = recortar_volumen_a_bbox(volumen)
     if volumen_recortado is None:
-        raise ValueError("El volumen de poros internos está vacío después del recorte.")
+        raise ValueError("El volumen está vacío después del recorte.")
 
-    volumen_a_stl(volumen_recortado, geom_cfg, ruta_stl, nombre_solid="poros_internos")
+    volumen_a_stl(volumen_recortado, geom_cfg, ruta_stl, nombre_solid=nombre)
 
-    return len(internal_ids), ruta_stl
+    return len(pore_ids), ruta_stl
+
 
 
 

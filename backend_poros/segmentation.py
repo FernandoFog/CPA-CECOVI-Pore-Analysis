@@ -60,6 +60,10 @@ def _segment_gray(
     labels = labels.astype(np.int32)
     return poros, labels, num_poros
 
+def imread_unicode(path: str):
+    with open(path, "rb") as f:
+        data = np.frombuffer(f.read(), np.uint8)
+    return cv2.imdecode(data, cv2.IMREAD_COLOR)
 
 def procesar_imagenes(
     image_paths: List[str],
@@ -81,7 +85,7 @@ def procesar_imagenes(
     for path in image_paths:
         nombre = os.path.basename(path)
 
-        imagen_color = cv2.imread(path)
+        imagen_color = imread_unicode(path)
         if imagen_color is None:
             print(f"[procesar_imagenes] ⚠ No se pudo leer: {path}")
             continue

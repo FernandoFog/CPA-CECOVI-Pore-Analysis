@@ -283,7 +283,7 @@ class PorosApp(ctk.CTk):
             return
 
         # Check first image
-        img0 = cv2.imread(self.image_paths[0])
+        img0 = self.imread_unicode(self.image_paths[0])
         if img0 is None: return
         h0, w0 = img0.shape[:2]
         
@@ -302,6 +302,13 @@ class PorosApp(ctk.CTk):
             self.current_image_index = (self.current_image_index + 1) % len(self.image_paths)
             self._update_all_previews()
 
+    import numpy as np
+
+    def imread_unicode(self, path):
+        with open(path, 'rb') as f:
+            data = np.frombuffer(f.read(), np.uint8)
+        return cv2.imdecode(data, cv2.IMREAD_COLOR)
+
     def _update_all_previews(self, *args):
         if not self.image_paths:
             return
@@ -317,7 +324,7 @@ class PorosApp(ctk.CTk):
             thr_cfg = self._build_threshold_config_safe()
             
             # 2. Procesar imagen
-            img_bgr = cv2.imread(path)
+            img_bgr = self.imread_unicode(path)
             if img_bgr is None: return
             img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
             h, w = img_rgb.shape[:2]

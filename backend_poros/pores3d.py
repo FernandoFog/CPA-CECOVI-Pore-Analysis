@@ -6,6 +6,9 @@ from collections import defaultdict
 
 import numpy as np
 import networkx as nx
+import trimesh
+from trimesh.smoothing import filter_taubin
+from scipy.ndimage import gaussian_filter
 from skimage.measure import marching_cubes
 
 from .models import (
@@ -161,52 +164,75 @@ def recortar_volumen_a_bbox(volumen: np.ndarray) -> np.ndarray | None:
     return volumen[z_min:z_max, y_min:y_max, x_min:x_max]
 
 
-def volumen_a_stl(
+def suavizar_volumen_gaussiano(
+    volumen: np.ndarray,
+    sigma_z: float = 0.6,
+    sigma_xy: float = 1.0,
+) -> np.ndarray:
+    """
+    Aplica suavizado gaussiano 3D a un volumen booleano o numérico.
+    Devuelve un volumen float suavizado.
+    """
+    volumen_float = volumen.astype(np.float32)
+    return gaussian_filter(
+        volumen_float,
+        sigma=(sigma_z, sigma_xy, sigma_xy)
+    )
+
+
+def extraer_malla_desde_volumen(
     volumen: np.ndarray,
     geom_cfg: GeometryConfig,
-    ruta_stl: str,
-    nombre_solid: str = "poros_internos",
-) -> None:
+    level: float = 0.5,
+) -> tuple[np.ndarray, np.ndarray]:
     """
-    Convierte un volumen booleano a un archivo STL (ASCII) usando marching_cubes.
-    Escala las coordenadas según GeometryConfig.
+    Extrae vertices y caras desde un volumen usando marching_cubes.
     """
-    if not np.any(volumen):
-        raise ValueError("El volumen está vacío; no se puede generar STL.")
-
     verts, faces, normals, values = marching_cubes(
-        volumen.astype(np.uint8),
-        level=0.5,
+        volumen,
+        level=level,
         spacing=(
             geom_cfg.slice_distance_mm,
             geom_cfg.pixel_size_mm,
             geom_cfg.pixel_size_mm,
         )
     )
+    return verts, faces
 
-    with open(ruta_stl, "w", encoding="utf-8") as f:
-        f.write(f"solid {nombre_solid}\n")
-        for tri in faces:
-            v1, v2, v3 = verts[tri]
-            n = np.cross(v2 - v1, v3 - v1)
-            norm = np.linalg.norm(n)
-            if norm > 0:
-                n = n / norm
-            else:
-                n = np.array([0.0, 0.0, 0.0])
 
-            f.write(
-                f"  facet normal {n[0]:.6e} {n[1]:.6e} {n[2]:.6e}\n"
-            )
-            f.write("    outer loop\n")
-            for v in (v1, v2, v3):
-                f.write(
-                    f"      vertex {v[0]:.6e} {v[1]:.6e} {v[2]:.6e}\n"
-                )
-            f.write("    endloop\n")
-            f.write("  endfacet\n")
-        f.write(f"endsolid {nombre_solid}\n")
+def suavizar_malla_taubin(
+    verts: np.ndarray,
+    faces: np.ndarray,
+    iteraciones: int = 10,
+    lamb: float = 0.5,
+    nu: float = -0.53,
+) -> trimesh.Trimesh:
+    """
+    Aplica suavizado Taubin a una malla triangulada.
+    """
+    mesh = trimesh.Trimesh(vertices=verts, faces=faces, process=False)
+    filter_taubin(mesh, lamb=lamb, nu=nu, iterations=iteraciones)
+    return mesh
 
+def volumen_a_stl(
+    volumen: np.ndarray,
+    geom_cfg: GeometryConfig,
+    ruta_stl: str,
+) -> None:
+    """
+    Convierte un volumen a STL sin aplicar suavizados.
+    Si el volumen es booleano/uint8, marching_cubes trabaja directo.
+    Si el volumen ya viene suavizado en float, también funciona.
+    """
+
+   
+    if not np.any(volumen):
+        raise ValueError("El volumen está vacío; no se puede generar STL.")
+
+    verts, faces = extraer_malla_desde_volumen(volumen, geom_cfg, level=0.5)
+
+    mesh = trimesh.Trimesh(vertices=verts, faces=faces, process=False)
+    mesh.export(ruta_stl)
 
 # --------------------------------------------------------------------
 #  Componentes internas y volúmenes (versión "área × distancia")

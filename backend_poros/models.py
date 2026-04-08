@@ -43,6 +43,22 @@ class ThresholdConfig:
 
 
 @dataclass
+class StlExportConfig:
+    """
+    Parámetros de exportación del STL.
+    - tipo: qué conjunto de poros exportar (internos, externos o todos).
+    - aplicar_gaussiano: si True, suaviza el volumen 3D antes de extraer la malla.
+    - aplicar_taubin: si True, suaviza la malla triangulada final.
+    """
+    tipo: str = "Internos"
+    aplicar_gaussiano: bool = False
+    aplicar_taubin: bool = False
+    sigma_z: float = 0.6
+    sigma_xy: float = 1.0
+    iteraciones_taubin: int = 10
+
+
+@dataclass
 class PoreAreaRecord:
     """
     Registro del área de un poro 2D en una imagen específica.

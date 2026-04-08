@@ -7,6 +7,7 @@ from .models import (
     ThresholdConfig,
     GeometryConfig,
     AnalysisResult,
+    StlExportConfig,
 )
 from .segmentation import procesar_imagenes
 from .overlaps import calcular_superposiciones
@@ -17,6 +18,9 @@ from .pores3d import (
     construir_volumen_3d,
     recortar_volumen_a_bbox,
     volumen_a_stl,
+    suavizar_volumen_gaussiano,
+    extraer_malla_desde_volumen,
+    suavizar_malla_taubin,
     compute_internal_components,
     compute_internal_components_volumes,
 )
@@ -91,20 +95,27 @@ def export_pores_stl(
     analysis: AnalysisResult,
     geom_cfg: GeometryConfig,
     ruta_stl: str,
-    tipo: str,  # "internos", "externos" o "todos"
+    export_cfg: StlExportConfig,
 ) -> tuple[int, str]:
 
-    if tipo == "internos":
+    tipo = export_cfg.tipo
+    aplicar_gaussiano = export_cfg.aplicar_gaussiano
+    aplicar_taubin = export_cfg.aplicar_taubin
+    sigma_z = export_cfg.sigma_z
+    sigma_xy = export_cfg.sigma_xy
+    iteraciones_taubin = export_cfg.iteraciones_taubin
+
+    if tipo == "Internos":
         pore_ids = analysis.internal_pore_ids
         nombre = "poros_internos"
-    elif tipo == "externos":
+    elif tipo == "Externos":
         pore_ids = analysis.external_pore_ids
         nombre = "poros_externos"
-    elif tipo == "todos":
+    elif tipo == "Todos":
         pore_ids = analysis.all_pore_ids
         nombre = "poros_todos"
     else:
-        raise ValueError("tipo debe ser 'internos', 'externos' o 'todos'")
+        raise ValueError("tipo debe ser 'Internos', 'Externos' o 'Todos'")
 
     if not pore_ids:
         raise ValueError(f"No hay poros {tipo} para exportar.")
@@ -118,7 +129,33 @@ def export_pores_stl(
     if volumen_recortado is None:
         raise ValueError("El volumen está vacío después del recorte.")
 
-    volumen_a_stl(volumen_recortado, geom_cfg, ruta_stl, nombre_solid=nombre)
+    volumen_para_exportar = volumen_recortado
+
+    if aplicar_gaussiano:
+        volumen_para_exportar = suavizar_volumen_gaussiano(
+            volumen_para_exportar,
+            sigma_z=sigma_z,
+            sigma_xy=sigma_xy,
+        )
+
+    if aplicar_taubin:
+        verts, faces = extraer_malla_desde_volumen(
+            volumen_para_exportar,
+            geom_cfg,
+            level=0.5,
+        )
+        mesh = suavizar_malla_taubin(
+            verts,
+            faces,
+            iteraciones=iteraciones_taubin,
+        )
+        mesh.export(ruta_stl)
+    else:
+        volumen_a_stl(
+            volumen_para_exportar,
+            geom_cfg,
+            ruta_stl,
+        )
 
     return len(pore_ids), ruta_stl
 

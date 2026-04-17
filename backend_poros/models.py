@@ -50,7 +50,7 @@ class StlExportConfig:
     - aplicar_gaussiano: si True, suaviza el volumen 3D antes de extraer la malla.
     - aplicar_taubin: si True, suaviza la malla triangulada final.
     """
-    tipo: str = "Internos"
+    tipo: str = "Internal"
     aplicar_gaussiano: bool = False
     aplicar_taubin: bool = False
     sigma_z: float = 0.6

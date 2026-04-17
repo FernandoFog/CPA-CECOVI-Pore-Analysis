@@ -4,7 +4,7 @@ class HelpWindow(ctk.CTkToplevel):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.title("Documentación / Ayuda")
+        self.title("Documentation / Help")
         self.geometry("600x780")
 
         # Make sure it floats on top
@@ -20,101 +20,101 @@ class HelpWindow(ctk.CTkToplevel):
         # Title
         ctk.CTkLabel(
             self.scroll,
-            text="Guía de Uso",
+            text="User Guide",
             font=ctk.CTkFont(size=24, weight="bold")
         ).pack(pady=(10, 20))
 
         # 1. Cargar
         self._add_section(
-            "1. Cargar Imágenes",
-            "Seleccione todas las imágenes (cortes) que componen su tomografía.\n"
-            "El sistema verificará que todas tengan la misma resolución."
+            "1. Load Images",
+            "Select all the images (slices) that make up your tomography.\n"
+            "The system will verify that they all have the same resolution."
         )
 
         # 2. Escala
         self._add_section(
-            "2. Escala (Geometría)",
-            "Es CRÍTICO ingresar los valores correctos para obtener volúmenes reales:\n"
-            "• Dimensión del pixel: Cuántos mm mide el lado de un píxel.\n"
-            "   Este valor se puede encontrar a partir de la división entre la dimensión real conocida en la imagen (mm)y la dimensión en píxeles (px).\n"
-            "• Distancia entre imágenes: El paso en Z entre cada corte.\n"
-            "   Este valor se puede encontrar a partir de la división entre la altura total de la muestra (mm) y el número de imagenes totales."
+            "2. Scale (Geometry)",
+            "It is CRITICAL to enter the correct values to obtain real volumes:\n"
+            "• Pixel dimension: How many mm one side of a pixel measures.\n"
+            "   This value can be found by dividing the known real dimension in the image (mm) by the dimension in pixels (px).\n"
+            "• Distance between images: The Z step between each slice.\n"
+            "   This value can be found by dividing the total height of the sample (mm) by the total number of images."
         )
 
         # 3. ROI
         self._add_section(
-            "3. Región de Interés",
-            "Recorte la imagen para analizar solo la zona de interés.\n\n"
-            "Parámetros de recorte:\n"
-            "• Y min / Y max: límites verticales.\n"
-            "• X min / X max: límites horizontales.\n"
-            "El recorte se aplica como: imagen[y_min:y_max, x_min:x_max].\n\n"
-            "Máscara Circular:\n"
-            "Permite definir una región circular dentro del recorte para limitar el análisis.\n\n"
-            "Parámetros de la máscara:\n"
-            "• ΔY Centro: desplazamiento vertical del centro respecto al centro de la imagen.\n"
-            "• ΔX Centro: desplazamiento horizontal del centro.\n"
-            "• Margen: distancia en píxeles entre el borde del recorte y el borde del círculo."
+            "3. Region of Interest",
+            "Crop the image to analyze only the zone of interest.\n\n"
+            "Cropping parameters:\n"
+            "• Y min / Y max: vertical limits.\n"
+            "• X min / X max: horizontal limits.\n"
+            "The crop is applied as: image[y_min:y_max, x_min:x_max].\n\n"
+            "Circular Mask:\n"
+            "Allows defining a circular region within the crop to limit the analysis.\n\n"
+            "Mask parameters:\n"
+            "• Center ΔY: vertical displacement of the center relative to the image center.\n"
+            "• Center ΔX: horizontal displacement of the center.\n"
+            "• Margin: distance in pixels between the crop edge and the circle edge."
         )
 
         # 4. Umbral
         self._add_section(
-            "4. Umbralización",
-            "Ajuste el valor de corte (0-255).\n"
-            "• Píxeles < Umbral se consideran POROS (negro).\n"
-            "• Píxeles > Umbral se consideran MATERIAL (blanco/gris).\n"
-            "Use la pestaña 'Binarizada' para verificar qué se está detectando."
+            "4. Thresholding",
+            "Adjust the cutoff value (0-255).\n"
+            "• Pixels < Threshold are considered PORES (black).\n"
+            "• Pixels > Threshold are considered MATERIAL (white/gray).\n"
+            "Use the 'Binarized' tab to check what is being detected."
         )
 
         self._add_section(
-            "4.1 Suavizado de imágenes (Median + Gauss)",
-            "La opción 'Suavizado (Median+Gauss)' se aplica ANTES de la segmentación.\n"
-            "Su objetivo es limpiar ruido y obtener una binarización más estable.\n\n"
-            "• Mediana: Toma la mediana de todos los píxeles dentro del área del kernel (3x3) y reemplaza el elemento central con ese valor mediano.\n"
-            "• Gaussiano: suaviza variaciones pequeñas de intensidad y hace más uniforme la imagen alaplicar una función en cada pixel que realiza la convolución de la imagen de entrada con el kernel gaussiano\n"
-            "       La documentación se puede consultar mediante el siguiente enlace: https://docs.opencv.org/4.x/d4/d13/tutorial_py_filtering.html\n\n"
-            "Cuándo conviene activarlo:\n"
-            "• Si la imagen tiene grano, ruido o pequeñas manchas.\n"
-            "• Si el contorno de los poros aparece muy irregular por el ruido.\n\n"
-            "Cuándo conviene probar sin activarlo:\n"
-            "• Si los poros son muy finos o pequeños y no quiere perder detalle.\n"
-            "• Si la imagen ya viene limpia y bien contrastada.\n\n"
-            "Recomendación:\n"
-            "Compare la pestaña 'Binarizada' con y sin suavizado para verificar qué opción representa mejor los poros reales."
+            "4.1 Image Smoothing (Median + Gauss)",
+            "The 'Smoothing (Median+Gauss)' option is applied BEFORE segmentation.\n"
+            "Its goal is to clean noise and obtain a more stable binarization.\n\n"
+            "• Median: Takes the median of all pixels within the kernel area (3x3) and replaces the central element with that median value.\n"
+            "• Gaussian: smooths small intensity variations and makes the image more uniform by applying a function on each pixel that performs the convolution of the input image with the gaussian kernel\n"
+            "       Documentation can be consulted through the following link: https://docs.opencv.org/4.x/d4/d13/tutorial_py_filtering.html\n\n"
+            "When to activate it:\n"
+            "• If the image has grain, noise, or small spots.\n"
+            "• If the pore contour appears very irregular due to noise.\n\n"
+            "When to try without activating it:\n"
+            "• If the pores are very fine or small and you don't want to lose detail.\n"
+            "• If the image is already clean and well contrasted.\n\n"
+            "Recommendation:\n"
+            "Compare the 'Binarized' tab with and without smoothing to verify which option best represents the real pores."
         )
 
         # 5. Ejecución
         self._add_section(
-            "5. Análisis y Exportación",
-            "Presione 'EJECUTAR ANÁLISIS'.\n"
-            "Al finalizar, podrá exportar:\n"
-            "• STL: Modelo 3D de los poros seleccionados.\n"
-            "• CSV (Volúmenes 3D): Lista de poros conectados y sus volúmenes.\n"
-            "• CSV (Análisis de poros): Métricas detalladas corte a corte."
+            "5. Analysis and Export",
+            "Press 'RUN ANALYSIS'.\n"
+            "Once finished, you can export:\n"
+            "• STL: 3D model of the selected pores.\n"
+            "• CSV (3D Volumes): List of connected pores and their volumes.\n"
+            "• CSV (Pore Analysis): Detailed slice-by-slice metrics."
         )
 
 
         # 7. Suavizado del STL
         self._add_section(
-            "5.1. Suavizado del STL",
-            "Estas opciones se aplican SOLO al modelo 3D exportado y no cambian el análisis 2D ni los volúmenes ya calculados.\n\n"
-            "• Suavizado Gaussiano:\n"
-            "  Se aplica al volumen 3D antes de generar la malla. Ayuda a redondear superficies escalonadas.\n"
-            "  Aplica un desenfoque (suavizado) a un array multidimensional usando un filtro gaussiano, reduciendo el ruido al promediar los valores cercanos según una distribución normal.\n"
-            "  - Sigma Z: controla el suavizado entre cortes.\n"
-            "  - Sigma XY: controla el suavizado dentro de cada imagen.\n"
-            "  Valores más altos generan una superficie más lisa, pero también pueden alterar más la forma original.\n"
-            "  Se puede consultar la documentación mediante el siguiente enlace: https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.gaussian_filter.html\n\n"
-            "• Suavizado Taubin:\n"
-            "  Se aplica después, sobre la malla STL ya generada. Sirve para suavizar la superficie triangulada sin deformarla en exceso.\n"
-            "  Ajusta la forma mediante difusión/laplaciano o calculando propiedades como normales y operadores necesarios para esas transformaciones.\n"
-            "  - Iteraciones Taubin: a mayor cantidad, mayor suavizado.\n"
-            "  Se puede consultar la documentación mediante el siguiente enlace: https://trimesh.org/trimesh.smoothing.html\n\n"
-            "Uso sugerido:\n"
-            "• Si el STL sale muy escalonado, active primero Gaussiano con valores moderados.\n"
-            "• Si además la malla queda rugosa, active Taubin.\n"
-            "• Evite valores demasiado altos si necesita conservar la geometría original con mayor fidelidad.\n\n"
-            "Los valores recomendados para estos parámetros dependen de la resolución de su tomografía y del nivel de detalle que quiera conservar en el STL. Se sugiere probar con valores bajos e ir ajustando según el la necesidad"
+            "5.1. STL Smoothing",
+            "These options apply ONLY to the exported 3D model and do not change the 2D analysis or the calculated volumes.\n\n"
+            "• Gaussian Smoothing:\n"
+            "  Applied to the 3D volume before generating the mesh. Helps round off stepped surfaces.\n"
+            "  Applies a blur (smoothing) to a multidimensional array using a Gaussian filter, reducing noise by averaging nearby values according to a normal distribution.\n"
+            "  - Sigma Z: controls smoothing between slices.\n"
+            "  - Sigma XY: controls smoothing within each image.\n"
+            "  Higher values generate a smoother surface, but may also alter the original shape more.\n"
+            "  Documentation can be consulted through the following link: https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.gaussian_filter.html\n\n"
+            "• Taubin Smoothing:\n"
+            "  Applied afterwards, on the already generated STL mesh. Used to smooth the triangulated surface without distorting it excessively.\n"
+            "  Adjusts the shape via diffusion/laplacian or by calculating properties like normals and operators needed for those transformations.\n"
+            "  - Taubin Iterations: the higher the amount, the more smoothing.\n"
+            "  Documentation can be consulted through the following link: https://trimesh.org/trimesh.smoothing.html\n\n"
+            "Suggested usage:\n"
+            "• If the STL looks very stepped, activate Gaussian first with moderate values.\n"
+            "• If the mesh is also rough, activate Taubin.\n"
+            "• Avoid excessively high values if you need to preserve the original geometry with greater fidelity.\n\n"
+            "The recommended values for these parameters depend on the resolution of your tomography and the level of detail you want to keep in the STL. It is suggested to try low values and adjust as needed."
         )
 
     def _add_section(self, title, text):

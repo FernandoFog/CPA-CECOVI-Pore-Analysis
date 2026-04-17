@@ -105,17 +105,17 @@ def export_pores_stl(
     sigma_xy = export_cfg.sigma_xy
     iteraciones_taubin = export_cfg.iteraciones_taubin
 
-    if tipo == "Internos":
+    if tipo == "Internal":
         pore_ids = analysis.internal_pore_ids
         nombre = "poros_internos"
-    elif tipo == "Externos":
+    elif tipo == "External":
         pore_ids = analysis.external_pore_ids
         nombre = "poros_externos"
-    elif tipo == "Todos":
+    elif tipo == "All":
         pore_ids = analysis.all_pore_ids
         nombre = "poros_todos"
     else:
-        raise ValueError("tipo debe ser 'Internos', 'Externos' o 'Todos'")
+        raise ValueError("tipo debe ser 'Internal', 'External' o 'All'")
 
     if not pore_ids:
         raise ValueError(f"No hay poros {tipo} para exportar.")

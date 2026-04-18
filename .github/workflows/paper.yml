@@ -1,0 +1,15 @@
+name: Build paper
+
+on:
+  push:
+    paths:
+      - paper.md
+      - paper.bib
+      - .github/workflows/paper.yml
+
+jobs:
+  build-paper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: openjournals/openjournals-docker@main

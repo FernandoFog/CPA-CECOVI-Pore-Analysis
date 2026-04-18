@@ -4,61 +4,62 @@ tags:
   - Python
   - X-ray computed tomography
   - pervious concrete
-  - pore network
+  - porous materials
   - image analysis
-  - materials characterization
+  - pore connectivity
 authors:
   - name: Fernando Fogliatti
     orcid: 0009-0002-1738-1447
-    affiliation: 1
-    corresponding: true
-    email: ffogliatti@utn.frsf.edu.ar
+    affiliation: "1"
   - name: María Fernanda Carrasco
     orcid: 0000-0002-5349-0969
-    affiliation: 1
-    email: mcarrasco@utn.frsf.edu.ar
+    affiliation: "1"
 affiliations:
-  - name: Centro de Investigación y Desarrollo para la Construcción y la Vivienda, Argentina
-    index: 1
-date: 17 April 2026
+  - index: 1
+    name: Centro de Investigación y Desarrollo para la Construcción y la Vivienda, Argentina
+date: 18 April 2026
 bibliography: paper.bib
 ---
 
 # Summary
 
-Pervious concrete is defined by a connected pore network that controls infiltration, drainage performance, and clogging susceptibility @tennis2004. Its hydraulic and mechanical behaviour is strongly governed by pore structure attributes such as connected porosity, pore size distribution, and tortuosity, which has motivated sustained interest in image-based characterization approaches @rao2021. X-ray computed tomography (XCT) can capture that internal structure in three dimensions, but transforming image stacks into reproducible descriptors commonly requires proprietary software or advanced scripting workflows.
+Pervious concrete contains an interconnected void structure that allows water to pass through the material. This pore system controls drainage, infiltration, and susceptibility to clogging, and it also affects mechanical performance [@tennis2004; @rao2021]. X-ray computed tomography (XCT) can image that internal structure in three dimensions, but turning XCT slices into reproducible pore descriptors often requires commercial software, undocumented manual decisions, or custom scripts that are difficult to reuse.
 
-CPA-CECOVI-Pore-Analysis addresses that gap with an open-source Python workflow for pore-network analysis in pervious concrete. The software loads ordered XCT slices, applies region-of-interest and circular-mask definitions, supports manual or Otsu-based thresholding @otsu1979 with optional smoothing, labels pores on each slice, links overlapping pores between consecutive slices, and builds a three-dimensional connectivity model based on graphs. From that model, the tool distinguishes externally connected pores from isolated internal pores, estimates per-slice porosity metrics, and exports three-dimensional geometries in STL together with CSV reports.
+CPA-CECOVI-Pore-Analysis is an open-source Python workflow for analyzing pore structure in pervious concrete from ordered XCT image stacks. The software combines image preprocessing, pore segmentation, slice-to-slice connectivity reconstruction, two-dimensional quantitative metrics, and three-dimensional export in a single package. It supports region-of-interest cropping, circular masking for cylindrical specimens, manual or Otsu-based thresholding, connected-component labeling, graph-based reconstruction of pore connectivity, classification of externally connected versus isolated internal pores, and export of CSV tables and STL geometries.
 
-The package was designed so that researchers and laboratories with limited access to commercial image-analysis platforms can obtain a transparent, auditable, and reusable workflow for pore characterization from XCT data.
+The package is designed for researchers and laboratories that need a transparent and reusable workflow for XCT-based pore characterization without depending on proprietary platforms. Although it was developed for pervious concrete, the same workflow can be adapted to other porous materials when ordered image stacks and geometric calibration are available.
 
 # Statement of need
 
-The internal architecture of pervious concrete controls hydraulic conductivity, available void ratio, and the balance between permeability and mechanical integrity. Because of this, pore-network characterization is central both to mixture design and to research on durability, clogging, and transport phenomena @tennis2004.
+The hydraulic behavior of pervious concrete is governed by its internal pore network. Parameters such as connected porosity, pore size distribution, and connectivity influence permeability, clogging resistance, and the balance between drainage capacity and structural integrity [@tennis2004; @rao2021]. For that reason, pore-network characterization is central to research on mixture design, durability, and transport phenomena in permeable cementitious materials.
 
-Several studies have shown the value of XCT for measuring pore structure and for reconstructing virtual pore networks in permeable concrete and other porous materials @zhang2018. More broadly, XCT has matured from a qualitative inspection technique into a quantitative measurement framework for materials characterization, provided that segmentation, calibration, and uncertainty sources are handled transparently @maire2014; @rodriguezsanchez2020. Related work on pore-network extraction from micro-CT images also highlights the importance of explicit connectivity reconstruction when moving from voxel data to interpretable pore descriptors @dong2009. Yet practical workflows remain difficult to reproduce when they depend on closed software, undocumented manual steps, or custom scripts that are not packaged for reuse.
+XCT has become an important tool for quantitative materials characterization, provided that segmentation choices, calibration, and uncertainty sources are handled transparently [@maire2014; @rodriguez2020]. In pervious concrete and related porous materials, previous studies have used XCT to investigate pore geometry and seepage-relevant structure [@zhang2018]. However, many practical workflows still depend on combinations of general-purpose image-analysis tools, closed commercial environments, or lab-specific scripts that are hard to audit and reproduce.
 
-CPA-CECOVI-Pore-Analysis was developed to provide an accessible workflow that connects laboratory XCT images with quantitative descriptors of pore geometry and connectivity. Beyond pervious concrete, the same workflow can support exploratory studies on other porous materials when image stacks and geometric calibration are available.
+CPA-CECOVI-Pore-Analysis was developed to address that gap. Its target users are researchers and laboratories that need an accessible workflow connecting XCT slices to quantitative pore descriptors and three-dimensional pore reconstructions. The software is intended to reduce the amount of manual glue code required to move from raw tomographic data to metrics that can be compared across specimens and studies.
 
-# Workflow and implementation
+# State of the field
 
-The software is organized as a modular backend--frontend architecture. A dedicated analysis pipeline coordinates segmentation, overlap detection, graph construction, classification of exterior and interior pores, and export operations. The graphical user interface exposes the pipeline to non-programmer users while preserving the same computational core used by the backend modules. This design follows broadly accepted recommendations for reusable and transparent scientific software, particularly the need for documented, auditable, and modular computational workflows @ince2012; @wilson2017.
+Open-source and commercial tools already exist for analyzing tomographic images. For example, PoreSpy provides a broad set of methods for quantitative analysis of porous-media images obtained from tomography and related sources [@Gostick2019]. Commercial platforms such as Avizo and Dragonfly provide powerful environments for 3D visualization, segmentation, quantification, and reporting from CT and microscopy data, but they are general platforms rather than specimen-oriented open workflows for a specific research use case [@avizo; @dragonfly].
 
-During segmentation, each slice is cropped to a user-defined region of interest and optionally constrained by a circular mask consistent with cylindrical specimens. Grayscale images can be smoothed before thresholding; the package supports manual thresholds and Otsu-based threshold selection. Connected-component labeling is then applied on each slice, and pore identifiers are offset so that labels remain unique across the full stack.
+CPA-CECOVI-Pore-Analysis is not intended to replace broad porous-media ecosystems or full commercial imaging suites. Its contribution is narrower and more application-specific: it packages a complete open workflow for XCT analysis of cylindrical pervious-concrete specimens, with explicit support for specimen masking, pore labeling across image stacks, overlap-based connectivity reconstruction, classification of externally connected and isolated pores, per-slice CSV exports, and STL generation from reconstructed internal pore bodies. In that sense, the software addresses a “build versus contribute” niche where the research need is not just image analysis in general, but a reproducible end-to-end workflow tailored to the pore characterization questions commonly encountered in pervious concrete studies.
 
-Three-dimensional connectivity is reconstructed by comparing consecutive slices and registering partial spatial overlap between pores. Seed pores that touch the specimen border or appear on the first or last slice are used to propagate connectivity and classify all pores as externally connected or isolated internal components.
+# Software design
 
-For quantitative analysis, the workflow computes per-image porosity, pore area, contour length, and pore-wall area estimates, and exports these values as CSV files. Internal connected components can also be grouped into three-dimensional pore bodies, assigned approximate volumes from slice area accumulation and calibrated voxel spacing, and exported as STL meshes. Optional Gaussian smoothing of the volume and Taubin smoothing of the extracted mesh are available before export.
+The software follows a modular backend-frontend design. The backend separates major tasks into analysis stages, including segmentation, overlap detection between consecutive slices, graph construction, pore classification, and export. The graphical user interface exposes these capabilities to non-programmer users while preserving a reusable computational core. This architecture was chosen so that the same scientific logic can support both interactive use in laboratories and future scripted extensions.
 
-# Typical outputs and reuse potential
+A central design decision is to reconstruct three-dimensional connectivity from explicit overlap relationships between labeled pores on adjacent slices. Instead of treating each slice independently, the workflow propagates connectivity through the full image stack and uses seed pores touching specimen boundaries or appearing at the first or last slice to classify pore systems as externally connected or isolated internal components. This choice matters for the intended research application because hydraulic relevance in pervious concrete depends not only on local pore area, but also on whether the void structure forms connected pathways through the specimen [@tennis2004; @zhang2018].
 
-The intended use case is the analysis of XCT image series obtained from cylindrical pervious concrete specimens. In that setting, the software helps laboratories move from tomographic slices to metrics that are directly interpretable in materials research, such as porosity by slice, pore-wall area proxies, internal pore volumes, and connected versus isolated void structure.
+A second design choice is to preserve transparency in segmentation and export. Users can define the region of interest, apply a circular mask consistent with cylindrical specimens, smooth grayscale images when appropriate, and choose between manual and Otsu-based thresholding [@otsu1979]. The workflow then reports interpretable outputs such as per-image porosity, pore area, contour length, pore-wall area proxies, approximate pore-body volumes, and STL meshes. This balances usability and auditability: the interface lowers the barrier to use, while the staged pipeline keeps the computational steps explicit.
 
-The STL export supports visualization and downstream geometric analysis, while the CSV outputs facilitate statistical post-processing and comparison between mixture designs. Because the workflow is open and modular, it can also serve as a base for future extensions such as more robust segmentation strategies, additional morphological descriptors, or tighter integration with hydraulic simulation workflows and open pore-network modeling environments.
+# Research impact statement
 
-# Availability
+CPA-CECOVI-Pore-Analysis makes a previously fragmented analysis process available as a public, reusable software package for pore characterization from XCT image stacks. At the time of writing, the project is an early public release rather than a mature community standard, so its strongest evidence of near-term significance is not citation count or widespread downstream adoption. Instead, its impact lies in converting a domain-specific workflow into an openly inspectable and distributable research tool that can be used, evaluated, and extended by other laboratories working on pervious concrete and related porous materials.
 
-The project is publicly available on GitHub at `FernandoFog/CPA-CECOVI-Pore-Analysis`. The codebase includes a modular backend, a graphical desktop interface, CSV export for two-dimensional metrics, and STL export for reconstructed pore volumes.
+The repository is publicly available, distributed under an open-source license, and includes installation instructions and a tagged release. These features lower the barrier for reuse and make the workflow easier to reproduce in academic settings. The immediate research value is that the software enables consistent extraction of pore metrics and 3D geometries from XCT data, which supports comparison among specimens, mixture designs, and future experimental campaigns. The same design also makes the package a practical base for later extensions, such as alternative segmentation strategies, additional morphological descriptors, or tighter coupling with simulation-oriented porous-media tools.
+
+# AI usage disclosure
+
+Generative AI tool (Chat GPT 5.4) were used to assist with language editing and structural revision of the manuscript text. All software descriptions, methodological claims, and references were reviewed and verified by the authors against the repository contents and the cited literature. No AI-generated content was accepted without human review and correction.
 
 # Acknowledgements
 

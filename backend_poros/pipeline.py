@@ -19,6 +19,7 @@ from .pores3d import (
     recortar_volumen_a_bbox,
     volumen_a_stl,
     suavizar_volumen_gaussiano,
+    agregar_padding_volumen,
     extraer_malla_desde_volumen,
     suavizar_malla_taubin,
     compute_internal_components,
@@ -107,13 +108,10 @@ def export_pores_stl(
 
     if tipo == "Internal":
         pore_ids = analysis.internal_pore_ids
-        nombre = "poros_internos"
     elif tipo == "External":
         pore_ids = analysis.external_pore_ids
-        nombre = "poros_externos"
     elif tipo == "All":
         pore_ids = analysis.all_pore_ids
-        nombre = "poros_todos"
     else:
         raise ValueError("tipo debe ser 'Internal', 'External' o 'All'")
 
@@ -138,6 +136,12 @@ def export_pores_stl(
             sigma_xy=sigma_xy,
         )
 
+    volumen_para_exportar = agregar_padding_volumen(
+        volumen_para_exportar,
+        pad_width=1,
+        valor=0.0,
+    )
+
     if aplicar_taubin:
         verts, faces = extraer_malla_desde_volumen(
             volumen_para_exportar,
@@ -158,7 +162,6 @@ def export_pores_stl(
         )
 
     return len(pore_ids), ruta_stl
-
 
 
 

@@ -180,6 +180,30 @@ def suavizar_volumen_gaussiano(
     )
 
 
+def agregar_padding_volumen(
+    volumen: np.ndarray,
+    pad_width: int = 1,
+    valor: float = 0.0,
+) -> np.ndarray:
+    """
+    Agrega un borde de voxels de fondo alrededor del volumen.
+
+    Esto fuerza a que la superficie extraída por marching_cubes quede cerrada
+    aunque el volumen suavizado toque los límites de la bounding box.
+    Debe aplicarse después del suavizado gaussiano para que el borde externo
+    quede nuevamente por debajo del nivel de extracción de la malla.
+    """
+    if pad_width <= 0:
+        return volumen
+
+    return np.pad(
+        volumen,
+        pad_width=((pad_width, pad_width), (pad_width, pad_width), (pad_width, pad_width)),
+        mode="constant",
+        constant_values=valor,
+    )
+
+
 def extraer_malla_desde_volumen(
     volumen: np.ndarray,
     geom_cfg: GeometryConfig,
